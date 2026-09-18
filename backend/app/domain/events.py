@@ -1,0 +1,28 @@
+from enum import StrEnum
+
+
+class EventCategory(StrEnum):
+    HEAVY_RAINFALL = "HEAVY_RAINFALL"
+    FLOOD = "FLOOD"
+    THUNDERSTORM = "THUNDERSTORM"
+    HEATWAVE = "HEATWAVE"
+    FOG = "FOG"
+    DUST_STORM = "DUST_STORM"
+    STRONG_WIND = "STRONG_WIND"
+    UNKNOWN = "UNKNOWN"
+
+
+class ProcessingStatus(StrEnum):
+    RECEIVED = "RECEIVED"
+    PROCESSING = "PROCESSING"
+    COMPLETE = "COMPLETE"
+    PARTIAL = "PARTIAL"
+    FAILED = "FAILED"
+
+
+class SystemAssessment(StrEnum):
+    PENDING = "PENDING"
+    CORROBORATED = "CORROBORATED"
+    NEEDS_REVIEW = "NEEDS_REVIEW"
+    DISPUTED = "DISPUTED"
+    UNAVAILABLE = "UNAVAILABLE"
