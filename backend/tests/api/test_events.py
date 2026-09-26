@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.api.dependencies import get_verification_provider
+from app.api.dependencies import get_geospatial_provider, get_verification_provider
 from fastapi.testclient import TestClient
 
 
@@ -41,6 +41,8 @@ def test_create_persists_and_retrieves_event(client: TestClient) -> None:
 def test_event_request_validation(client: TestClient) -> None:
     assert client.post("/api/v1/events", json=event_payload(latitude=91)).status_code == 422
     assert client.post("/api/v1/events", json=event_payload(longitude=181)).status_code == 422
+    assert client.post("/api/v1/events", json=event_payload(latitude=None)).status_code == 422
+    assert client.post("/api/v1/events", json=event_payload(longitude=None)).status_code == 422
     assert (
         client.post("/api/v1/events", json=event_payload(event_type="RAINBOW")).status_code == 422
     )
@@ -100,3 +102,31 @@ def test_provider_failure_does_not_rollback_event(client: TestClient) -> None:
     assert response.json()["processing_status"] == "PARTIAL"
     assert response.json()["system_assessment"] == "UNAVAILABLE"
     assert response.json()["metadata"]["provider_status"]["verification"] == "UNAVAILABLE"
+
+
+def test_geospatial_failure_does_not_rollback_event(client: TestClient) -> None:
+    class FailingGeospatialProvider:
+        async def enrich_location(self, *args: object) -> object:
+            raise RuntimeError("PostGIS unavailable")
+
+    client.app.dependency_overrides[get_geospatial_provider] = FailingGeospatialProvider
+    response = client.post("/api/v1/events", json=event_payload())
+
+    assert response.status_code == 201
+    assert response.json()["processing_status"] == "PARTIAL"
+    assert response.json()["metadata"]["provider_status"]["geospatial"] == "UNAVAILABLE"
+
+
+def test_spatial_routes_validate_radius_and_preserve_mock_behavior(client: TestClient) -> None:
+    created = client.post("/api/v1/events", json=event_payload()).json()
+
+    assert client.get("/api/v1/events/00000000-0000-0000-0000-000000000000/nearby").status_code == 404
+    assert client.get(f"/api/v1/events/{created['id']}/nearby?radius_meters=0").status_code == 422
+    nearby = client.get(f"/api/v1/events/{created['id']}/nearby")
+    assert nearby.status_code == 200
+    assert nearby.json()["provider"]["name"] == "mock"
+    assert nearby.json()["items"] == []
+
+    geojson = client.get("/api/v1/events/map/events")
+    assert geojson.status_code == 200
+    assert geojson.json() == {"type": "FeatureCollection", "features": []}

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgis/postgis:16-3.4
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-weatherfusion}
       POSTGRES_USER: ${POSTGRES_USER:-weatherfusion}
@@ -8,7 +8,7 @@ services:
     ports:
       - "55432:5432"
     volumes:
-      - weatherfusion_postgres:/var/lib/postgresql/data
+      - weatherfusion_postgis:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -16,4 +16,4 @@ services:
       retries: 10
 
 volumes:
-  weatherfusion_postgres:
+  weatherfusion_postgis:

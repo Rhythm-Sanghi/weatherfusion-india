@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi.testclient import TestClient
+
 from .test_events import event_payload
 
 

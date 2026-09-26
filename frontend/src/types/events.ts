@@ -13,6 +13,7 @@ export type SystemAssessment = "PENDING" | "CORROBORATED" | "NEEDS_REVIEW" | "DI
 export type AdminStatus = "UNREVIEWED" | "VERIFIED" | "REJECTED" | "ESCALATED";
 
 export type Source = { id: string; name: string; source_type: string; reliability: number | null; enabled: boolean };
+export type MediaEvidence = { id: string; media_type: "IMAGE" | "VIDEO"; reference: string; mime_type: string | null; caption: string | null; source_name: string; is_demo: boolean; created_at: string };
 
 export type WeatherEvent = {
   id: string;
@@ -37,12 +38,16 @@ export type WeatherEvent = {
   version: number;
   metadata: Record<string, unknown>;
   source: Source;
+  media_evidence?: MediaEvidence[];
 };
 
 export type EventFilters = Partial<Pick<WeatherEvent, "event_type" | "severity" | "processing_status" | "system_assessment" | "admin_status">> & {
   state?: string;
+  date_from?: string;
+  date_to?: string;
   page?: number;
   page_size?: number;
+  boundary_id?: string;
 };
 
 export type EventListResponse = { items: WeatherEvent[]; page: number; page_size: number; total: number };
@@ -58,3 +63,16 @@ export type AuditEvent = { id: string; event_id: string; event_type: string; act
 export type ReviewQueueItem = WeatherEvent & { attention_reason: string };
 export type ReviewDetail = { event: WeatherEvent; attention_reason: string; audit: AuditEvent[] };
 export type ReviewRequest = { action: ReviewAction; reviewer_id: string; reviewer_name: string; reason: string; notes?: string; expected_version: number };
+export type CitizenReportRequest = {
+  description: string;
+  event_type?: EventCategory;
+  severity?: string;
+  latitude: number;
+  longitude: number;
+  observed_at: string;
+  state?: string;
+  district?: string;
+  city?: string;
+  reporter_alias?: string;
+  media?: Array<{ media_type: "IMAGE" | "VIDEO"; reference: string; mime_type?: string; caption?: string }>;
+};

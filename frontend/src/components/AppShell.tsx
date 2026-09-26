@@ -4,10 +4,12 @@ const navigation = [
   ["Situation", "/"],
   ["Map", "/map"],
   ["Events", "/events"],
+  ["Live Feed", "/live-feed"],
   ["Review Queue", "/review"],
   ["Analytics", "/analytics"],
   ["Sources", "/sources"],
   ["System", "/system"],
+  ["Architecture", "/architecture"],
 ] as const;
 
 export function AppShell() {

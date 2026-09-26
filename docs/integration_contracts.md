@@ -23,22 +23,40 @@ The current `MockVerificationProvider` returns `UNKNOWN`, `UNAVAILABLE`, no scor
 
 ## Geospatial provider
 
-`GeospatialProvider` exposes three async methods:
+`GeospatialProvider` exposes read-only enrichment, candidate retrieval, regional summary,
+and map-feature methods:
 
 ```python
 class GeospatialProvider(Protocol):
     async def enrich_location(self, event: GeospatialEventInput) -> LocationEnrichment: ...
     async def find_nearby(self, event: GeospatialEventInput, query: NearbyQuery) -> list[NearbyEvent]: ...
     async def region_summary(self, filters: RegionSummaryFilters) -> list[RegionSummary]: ...
+    async def geojson_features(self, filters: MapEventFilters) -> list[dict[str, object]]: ...
 ```
 
 `GeospatialEventInput` contains stable event ID, latitude, longitude, observed time, and optional administrative names. `LocationEnrichment` returns optional state, district, and city plus a provider status. `NearbyQuery` includes a requested radius and optional time bound; `NearbyEvent` references an existing event and may include a provider-calculated distance. `RegionSummary` contains a stable region ID, name, event count, and metadata.
 
-Coordinates are decimal degrees. The provider owns authoritative geographic calculations, boundaries, clustering, and enrichment. A frontend must consume backend-delivered map data rather than recreating those calculations. The current `MockGeospatialProvider` returns pending enrichment and empty collections only. Phase 2 calls enrichment only when coordinates are present; a failure leaves the event persisted and marked partial.
+Coordinates are decimal degrees. `NearbyQuery.radius_meters` is expressed in metres; the
+legacy `radius_km` input remains accepted for older contract consumers. The PostGIS provider
+uses the request or ingestion session after its event flush, never commits, rolls back, or
+closes that session. It uses `ST_DWithin` and `ST_Distance` against generated geography
+points, and returns deterministic distance/ID ordering. A frontend consumes the backend
+GeoJSON rather than calculating geographic distances itself. The mock provider remains an
+empty, isolated-test implementation. Phase 2 calls enrichment only when coordinates are
+present; a provider failure leaves the event persisted and marked partial.
 
 ## Integration expectations
 
 Future implementations are selected through `VERIFICATION_PROVIDER` and `GEOSPATIAL_PROVIDER`. The factory functions in `app.api.dependencies` are the only composition point. Teammates should add a provider implementation, register its configuration name, and satisfy contract tests for type shape, score bounds, metadata, empty results, and failure behavior.
+
+## G3 geographic aggregation
+
+The PostGIS provider also supports typed cluster, hotspot, and regional-summary query DTOs.
+Cluster IDs are scoped to a single query and are not persistent identities. A hotspot is a count
+of submitted reports in a fixed spatial cell, not a forecast, severity score, or verification
+result. Regional summaries can use source-provided attributes or the imported approved-boundary
+dataset; the response identifies the grouping method, dataset, and vintage. `GET /api/v1/geo/boundaries`
+returns the available boundary metadata and geometry for the selected level.
 # Phase 6 teammate handoff
 
 ## AI/ML teammate

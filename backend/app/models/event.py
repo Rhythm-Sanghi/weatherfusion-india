@@ -19,6 +19,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.types import Uuid
 
 from app.db import Base
+from app.db_types import GeographyPoint
 from app.domain.events import EventCategory, ProcessingStatus, SystemAssessment
 from app.domain.reviews import AdminStatus, ReviewAction
 
@@ -90,6 +91,9 @@ class WeatherEvent(Base):
     raw_text: Mapped[str] = mapped_column(Text)
     latitude: Mapped[float | None] = mapped_column(nullable=True)
     longitude: Mapped[float | None] = mapped_column(nullable=True)
+    location: Mapped[str | None] = mapped_column(
+        GeographyPoint(), nullable=True, server_default=text("NULL")
+    )
     state: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     district: Mapped[str | None] = mapped_column(String(100), nullable=True)
     city: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -114,6 +118,25 @@ class WeatherEvent(Base):
     metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSON, default=dict)
 
     source: Mapped[Source] = relationship(back_populates="events")
+    media_evidence: Mapped[list["MediaEvidence"]] = relationship(
+        back_populates="event", cascade="all, delete-orphan"
+    )
+
+
+class MediaEvidence(Base):
+    __tablename__ = "media_evidence"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    event_id: Mapped[UUID] = mapped_column(ForeignKey("weather_events.id"), index=True)
+    media_type: Mapped[str] = mapped_column(String(16))
+    reference: Mapped[str] = mapped_column(String(500))
+    mime_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    caption: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    source_name: Mapped[str] = mapped_column(String(160))
+    is_demo: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    event: Mapped[WeatherEvent] = relationship(back_populates="media_evidence")
 
 
 class ReviewDecision(Base):

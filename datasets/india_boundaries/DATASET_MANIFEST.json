@@ -1,0 +1,7 @@
+{
+  "release_commit": "9469f09",
+  "datasets": [
+    {"level": "ADM1", "boundary_id": "IND-ADM1-1811400", "year": "2011", "license": "CC BY 2.5 India", "sha256": "47AA0ACB6F69868DAEE49143276F3CE323F18905BA7D38D0A86816B405028736", "features": 36, "url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM1/geoBoundaries-IND-ADM1.geojson"},
+    {"level": "ADM2", "boundary_id": "IND-ADM2-76128533", "year": "2021", "license": "ODbL 1.0", "sha256": "8BEF6929FD65432E7DC775E7C44473E84EFFF064EBDDBFD6B834E6291546DB40", "features": 735, "url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM2/geoBoundaries-IND-ADM2.geojson"}
+  ]
+}

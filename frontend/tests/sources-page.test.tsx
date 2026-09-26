@@ -1,0 +1,12 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
+import { getSources, ingestControlledSocialFeed, ingestExternalWeather } from "../src/api/client";
+import { SourcesPage } from "../src/pages/SourcesPage";
+
+vi.mock("../src/api/client", () => ({ getSources: vi.fn(), ingestControlledSocialFeed: vi.fn(), ingestExternalWeather: vi.fn() }));
+const sources = vi.mocked(getSources); const ingest = vi.mocked(ingestExternalWeather); const social = vi.mocked(ingestControlledSocialFeed);
+function page() { return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><SourcesPage /></QueryClientProvider>); }
+test("refreshes external data and displays live mode", async () => { sources.mockResolvedValue([{ id: "source", name: "Open-Meteo", source_type: "EXTERNAL_WEATHER", enabled: true, event_count: 0, last_activity: null, status: "configured" }]); ingest.mockResolvedValue({ mode: "live", created: 3, duplicates: 0, failed: 0 }); page(); expect(await screen.findByText("Open-Meteo")).toBeInTheDocument(); fireEvent.click(screen.getByRole("button", { name: "Refresh external weather data" })); expect(await screen.findByText(/Mode: live/i)).toBeInTheDocument(); });
+test("renders cached ingestion result", async () => { sources.mockResolvedValue([]); ingest.mockResolvedValue({ mode: "cached", created: 0, duplicates: 3, failed: 0 }); page(); await screen.findByRole("button", { name: "Refresh external weather data" }); fireEvent.click(screen.getByRole("button", { name: "Refresh external weather data" })); expect(await screen.findByText(/Mode: cached/i)).toBeInTheDocument(); });
+test("shows and ingests the controlled social dataset", async () => { sources.mockResolvedValue([{ id: "social", name: "Controlled Social Weather Feed", source_type: "SOCIAL_PROTOTYPE", enabled: true, event_count: 0, last_activity: null, status: "controlled dataset", mode: "controlled", records_available: 20 }]); social.mockResolvedValue({ mode: "controlled", received: 20, matched: 18, created: 18, duplicates: 0, failed: 0 }); page(); expect(await screen.findByText("Controlled Social Weather Feed")).toBeInTheDocument(); expect(screen.getByText("Records available: 20")).toBeInTheDocument(); fireEvent.click(screen.getByRole("button", { name: "Ingest social feed" })); expect(await screen.findByText(/18 matched/i)).toBeInTheDocument(); });

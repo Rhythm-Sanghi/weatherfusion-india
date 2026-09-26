@@ -24,8 +24,8 @@ export function SystemPage() {
           <dt>Service</dt>
           <dd>{health.data?.database?.status ?? "Awaiting response"}</dd>
         </div>
-        <div><dt>Verification Adapter</dt><dd>{health.data?.verification_provider?.implementation ? `Prototype Mock (${health.data.verification_provider.implementation})` : "Awaiting response"}</dd></div>
-        <div><dt>Geospatial Adapter</dt><dd>{health.data?.geospatial_provider?.implementation ? `Prototype Mock (${health.data.geospatial_provider.implementation})` : "Awaiting response"}</dd></div>
+        <div><dt>Verification Adapter</dt><dd>{health.data?.verification_provider?.implementation ? `${health.data.verification_provider.status} (${health.data.verification_provider.implementation})` : "Awaiting response"}</dd></div>
+        <div><dt>Geospatial Adapter</dt><dd>{health.data?.geospatial_provider?.implementation ? `${health.data.geospatial_provider.status} (${health.data.geospatial_provider.implementation})` : "Awaiting response"}</dd></div>
       </dl>
       {health.isError && <p className="status-note">Start the backend and refresh this page.</p>}
     </section>

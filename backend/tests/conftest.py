@@ -19,6 +19,7 @@ def client() -> TestClient:
     Base.metadata.create_all(engine)
     session_factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     app = create_app(Settings(app_env="test", database_url="sqlite://"))
+    app.state.test_session_factory = session_factory
 
     def override_session() -> Session:
         session = session_factory()

@@ -4,8 +4,8 @@ from uuid import UUID
 from app.domain.events import EventCategory, ProcessingStatus, SystemAssessment
 from app.domain.reviews import AdminStatus
 from app.models.event import Source, WeatherEvent
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func, select, text
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 
 class EventRepository:
@@ -32,7 +32,7 @@ class EventRepository:
     def get(self, event_id: UUID) -> WeatherEvent | None:
         return self.session.scalar(
             select(WeatherEvent)
-            .options(joinedload(WeatherEvent.source))
+            .options(joinedload(WeatherEvent.source), selectinload(WeatherEvent.media_evidence))
             .where(WeatherEvent.id == event_id)
         )
 
@@ -49,8 +49,11 @@ class EventRepository:
         admin_status: AdminStatus | None = None,
         date_from: datetime | None = None,
         date_to: datetime | None = None,
+        boundary_id: UUID | None = None,
     ) -> tuple[list[WeatherEvent], int]:
-        statement = select(WeatherEvent).options(joinedload(WeatherEvent.source))
+        statement = select(WeatherEvent).options(
+            joinedload(WeatherEvent.source), selectinload(WeatherEvent.media_evidence)
+        )
         count_statement = select(func.count()).select_from(WeatherEvent)
         filters = []
         if event_type is not None:
@@ -69,6 +72,15 @@ class EventRepository:
             filters.append(WeatherEvent.observed_at >= date_from)
         if date_to is not None:
             filters.append(WeatherEvent.observed_at <= date_to)
+        if boundary_id is not None:
+            filters.append(
+                text(
+                    """EXISTS (SELECT 1 FROM administrative_boundaries ab
+                    WHERE ab.id = CAST(:boundary_id AS uuid)
+                    AND weather_events.location IS NOT NULL
+                    AND ST_Covers(ab.geometry, weather_events.location::geometry))"""
+                ).bindparams(boundary_id=str(boundary_id))
+            )
         if filters:
             statement = statement.where(*filters)
             count_statement = count_statement.where(*filters)

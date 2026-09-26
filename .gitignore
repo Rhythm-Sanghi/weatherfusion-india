@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # Python
 __pycache__/
@@ -20,9 +21,31 @@ frontend/node_modules/
 frontend/dist/
 frontend/coverage/
 
+# Docker build context and local deployment configuration
+
 # Local database data
 .data/
 postgres_data/
+.weather_cache/
+backups/
+postgis-test-data/
+.boundary_datasets/
+ml/data/cache/
+ml/data/input/
+ml/data/annotations/
+ml/output/
+
+# Reproducible source data and generated ML outputs.  These files are either
+# large enough to make normal GitHub pushes fail or are local working data.
+# Keep only the small boundary manifest and attribution documents in Git.
+datasets/*
+!datasets/india_boundaries/
+datasets/india_boundaries/*
+!datasets/india_boundaries/DATASET_MANIFEST.json
+!datasets/india_boundaries/LICENSE_AND_ATTRIBUTION.md
+!datasets/india_boundaries/LIMITATIONS.md
+ml/data/
+ml/artifacts/
 
 # Editors and operating systems
 .vscode/

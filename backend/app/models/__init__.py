@@ -1,3 +1,10 @@
-from app.models.event import AuditEvent, RawIngestRecord, ReviewDecision, Source, WeatherEvent
+from app.models.event import (
+    AuditEvent,
+    MediaEvidence,
+    RawIngestRecord,
+    ReviewDecision,
+    Source,
+    WeatherEvent,
+)
 
-__all__ = ["AuditEvent", "RawIngestRecord", "ReviewDecision", "Source", "WeatherEvent"]
+__all__ = ["AuditEvent", "MediaEvidence", "RawIngestRecord", "ReviewDecision", "Source", "WeatherEvent"]

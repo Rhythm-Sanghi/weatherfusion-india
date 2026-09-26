@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-weatherfusion}
+      POSTGRES_USER: ${POSTGRES_USER:-weatherfusion}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env before deployment}
+    volumes:
+      - weatherfusion_postgis:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      APP_ENV: production
+      DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-weatherfusion}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-weatherfusion}
+      CORS_ORIGINS: '["http://localhost:8080"]'
+      VERIFICATION_PROVIDER: ${VERIFICATION_PROVIDER:-operational}
+      GEOSPATIAL_PROVIDER: ${GEOSPATIAL_PROVIDER:-postgis}
+      DEMO_MODE: ${DEMO_MODE:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  weatherfusion_postgis:

@@ -1,0 +1,2 @@
+record_id,report_text,language,source_dataset,source_record_id,source_type,source_reference,observation_time,received_time,original_source_label,incident_group_id,duplicate_group_id
+REPLACE_WITH_STABLE_ID,Replace with permitted original report text,en,REPLACE_WITH_DATASET,REPLACE_WITH_SOURCE_RECORD_ID,NEWS,https://example.org/source,2026-01-01T00:00:00Z,2026-01-01T00:00:00Z,UNREVIEWED_SOURCE_LABEL,,

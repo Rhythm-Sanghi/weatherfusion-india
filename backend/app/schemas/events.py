@@ -54,6 +54,12 @@ class EventCreate(BaseModel):
             raise ValueError("description or raw_text is required")
         return self
 
+    @model_validator(mode="after")
+    def require_coordinate_pair(self) -> "EventCreate":
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must be provided together")
+        return self
+
 
 class SourceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -63,6 +69,19 @@ class SourceResponse(BaseModel):
     source_type: str
     reliability: float | None
     enabled: bool
+
+
+class MediaEvidenceResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    media_type: str
+    reference: str
+    mime_type: str | None
+    caption: str | None
+    source_name: str
+    is_demo: bool
+    created_at: datetime
 
 
 class EventResponse(BaseModel):
@@ -90,6 +109,7 @@ class EventResponse(BaseModel):
     version: int
     metadata: dict[str, Any]
     source: SourceResponse
+    media_evidence: list[MediaEvidenceResponse] = Field(default_factory=list)
 
     @classmethod
     def from_event(cls, event: Any) -> "EventResponse":
@@ -117,6 +137,7 @@ class EventResponse(BaseModel):
                 "version": event.version,
                 "metadata": event.metadata_,
                 "source": event.source,
+                "media_evidence": event.media_evidence,
             }
         )
 

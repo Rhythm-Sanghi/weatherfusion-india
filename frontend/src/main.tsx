@@ -5,6 +5,7 @@ import { RouterProvider } from "react-router-dom";
 
 import { router } from "./routes/AppRoutes";
 import "./styles.css";
+import "./regional-controls.css";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },

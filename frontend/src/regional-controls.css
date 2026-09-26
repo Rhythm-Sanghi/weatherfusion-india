@@ -1,0 +1,37 @@
+.event-section [role="group"][aria-label="Regional grouping"] {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 18px;
+}
+
+.event-section [role="group"][aria-label="Regional grouping"] button {
+  background: #fff;
+  border: 1px solid #c8d1c5;
+  color: #285247;
+  cursor: pointer;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  padding: 9px 12px;
+}
+
+.event-section [role="group"][aria-label="Regional grouping"] button:hover {
+  background: #eff3ec;
+}
+
+.event-section [role="group"][aria-label="Regional grouping"] button[aria-pressed="true"] {
+  background: #285247;
+  border-color: #285247;
+  color: #fff;
+}
+
+.event-section [role="group"][aria-label="Regional grouping"] select {
+  background: #fff;
+  border: 1px solid #c8d1c5;
+  color: #285247;
+  font: inherit;
+  font-size: .8rem;
+  padding: 8px 10px;
+}

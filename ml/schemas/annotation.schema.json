@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WeatherFusion annotated report v1",
+  "type": "object",
+  "required": ["record_id", "report_text", "language", "source_dataset", "source_record_id", "source_type", "weather_relevance_label", "primary_event_type_label", "annotation_status", "annotation_guideline_version"],
+  "properties": {
+    "record_id": {"type": "string", "minLength": 1},
+    "report_text": {"type": "string", "minLength": 1},
+    "language": {"type": "string", "minLength": 1},
+    "source_dataset": {"type": "string", "minLength": 1},
+    "source_record_id": {"type": "string", "minLength": 1},
+    "source_type": {"type": "string", "minLength": 1},
+    "source_reference": {"type": ["string", "null"]},
+    "observation_time": {"type": ["string", "null"], "format": "date-time"},
+    "received_time": {"type": ["string", "null"], "format": "date-time"},
+    "latitude": {"type": ["number", "null"], "minimum": -90, "maximum": 90},
+    "longitude": {"type": ["number", "null"], "minimum": -180, "maximum": 180},
+    "weather_relevance_label": {"enum": ["WEATHER_RELEVANT", "NOT_WEATHER_RELEVANT", "UNCERTAIN", null]},
+    "primary_event_type_label": {"enum": ["HEAVY_RAINFALL", "FLOOD", "THUNDERSTORM", "HEATWAVE", "FOG", "DUST_STORM", "STRONG_WIND", "UNKNOWN", null]},
+    "annotation_status": {"enum": ["PENDING_REVIEW", "REVIEWED", "APPROVED"]},
+    "annotator_id": {"type": ["string", "null"]},
+    "annotation_guideline_version": {"type": "string", "minLength": 1},
+    "incident_group_id": {"type": ["string", "null"]},
+    "duplicate_group_id": {"type": ["string", "null"]},
+    "notes": {"type": ["string", "null"]},
+    "synthetic_fixture": {"type": "boolean"}
+  },
+  "allOf": [
+    {"if": {"properties": {"weather_relevance_label": {"const": "NOT_WEATHER_RELEVANT"}}}, "then": {"properties": {"primary_event_type_label": {"const": null}}}},
+    {"if": {"properties": {"weather_relevance_label": {"const": "UNCERTAIN"}}}, "then": {"properties": {"primary_event_type_label": {"const": null}}}}
+  ],
+  "additionalProperties": false
+}

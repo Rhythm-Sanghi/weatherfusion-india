@@ -2,7 +2,11 @@ import { createBrowserRouter } from "react-router-dom";
 
 import { AppShell } from "../components/AppShell";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
+import { ArchitecturePage } from "../pages/ArchitecturePage";
+import { CitizenReportPage } from "../pages/CitizenReportPage";
 import { EventDetailPage } from "../pages/EventDetailPage";
+import { IncidentBriefPage } from "../pages/IncidentBriefPage";
+import { LiveFeedPage } from "../pages/LiveFeedPage";
 import { EventsPage } from "../pages/EventsPage";
 import { MapPage } from "../pages/MapPage";
 import { ReviewQueuePage } from "../pages/ReviewQueuePage";
@@ -27,7 +31,10 @@ export const router = createBrowserRouter([
         path: "/events",
         element: <EventsPage />,
       },
+      { path: "/reports/citizen", element: <CitizenReportPage /> },
+      { path: "/live-feed", element: <LiveFeedPage /> },
       { path: "/events/:eventId", element: <EventDetailPage /> },
+      { path: "/events/:eventId/brief", element: <IncidentBriefPage /> },
       {
         path: "/review",
         element: <ReviewQueuePage />,
@@ -42,6 +49,7 @@ export const router = createBrowserRouter([
         element: <SourcesPage />,
       },
       { path: "/system", element: <SystemPage /> },
+      { path: "/architecture", element: <ArchitecturePage /> },
     ],
   },
 ]);

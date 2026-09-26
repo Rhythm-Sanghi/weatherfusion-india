@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, expect, test, vi } from "vitest";
 
-import { getEvent, getEventSummary, listEvents } from "../src/api/client";
+import { getEvent, getEventSummary, getWeatherForecast, listEvents } from "../src/api/client";
 import { EventDetailPage } from "../src/pages/EventDetailPage";
 import { EventsPage } from "../src/pages/EventsPage";
 import { MapPage } from "../src/pages/MapPage";
@@ -13,6 +13,7 @@ import type { WeatherEvent } from "../src/types/events";
 vi.mock("../src/api/client", () => ({
   getEvent: vi.fn(),
   getEventSummary: vi.fn(),
+  getWeatherForecast: vi.fn().mockResolvedValue({ status: "unavailable", source: "open-meteo", forecast: null }),
   listEvents: vi.fn(),
 }));
 
@@ -28,6 +29,7 @@ vi.mock("maplibre-gl", () => ({
 const mockedListEvents = vi.mocked(listEvents);
 const mockedGetEvent = vi.mocked(getEvent);
 const mockedGetEventSummary = vi.mocked(getEventSummary);
+const mockedGetWeatherForecast = vi.mocked(getWeatherForecast);
 
 const event: WeatherEvent = {
   id: "event-1", external_id: "demo-001", event_type: "FLOOD", severity: "HIGH", title: "Flood report", description: "A curated report.", raw_text: "Flood report", latitude: 26.1, longitude: 91.7, state: "Assam", district: "Kamrup", city: "Guwahati", observed_at: "2026-09-19T06:00:00Z", received_at: "2026-09-19T06:00:00Z", created_at: "2026-09-19T06:00:00Z", updated_at: "2026-09-19T06:00:00Z", processing_status: "COMPLETE", system_assessment: "NEEDS_REVIEW", admin_status: "UNREVIEWED", version: 1, metadata: {}, source: { id: "source-1", name: "Demo", source_type: "DEMO", reliability: null, enabled: true },
@@ -38,7 +40,7 @@ function renderPage(page: React.ReactNode) {
   return render(<QueryClientProvider client={queryClient}><MemoryRouter>{page}</MemoryRouter></QueryClientProvider>);
 }
 
-afterEach(() => vi.resetAllMocks());
+afterEach(() => vi.clearAllMocks());
 
 test("situation renders API summary and recent events", async () => {
   mockedGetEventSummary.mockResolvedValue({ total_events: 1, by_processing_status: { PARTIAL: 0 }, by_system_assessment: { NEEDS_REVIEW: 1 }, by_admin_status: {} });
@@ -62,6 +64,14 @@ test("situation shows API failure", async () => {
   expect(await screen.findByText("Situation unavailable")).toBeInTheDocument();
 });
 
+test("situation labels demo-offline forecast data without presenting it as live", async () => {
+  mockedGetEventSummary.mockResolvedValue({ total_events: 0, by_processing_status: {}, by_system_assessment: {}, by_admin_status: {} });
+  mockedListEvents.mockResolvedValue({ items: [], page: 1, page_size: 100, total: 0 });
+  mockedGetWeatherForecast.mockResolvedValue({ status: "demo_offline", source: "open-meteo", forecast: null });
+  renderPage(<SituationPage />);
+  expect(await screen.findByText(/demo offline; no live forecast is being displayed/)).toBeInTheDocument();
+});
+
 test("explorer loads events and applies a category filter", async () => {
   mockedListEvents.mockResolvedValue({ items: [event], page: 1, page_size: 10, total: 1 });
   renderPage(<EventsPage />);
@@ -74,6 +84,7 @@ test("detail renders an event and its separate status fields", async () => {
   mockedGetEvent.mockResolvedValue(event);
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter initialEntries={["/events/event-1"]}><Routes><Route path="/events/:eventId" element={<EventDetailPage />} /></Routes></MemoryRouter></QueryClientProvider>);
   expect(await screen.findByText("Flood report")).toBeInTheDocument();
+  expect(screen.getByText("CITIZEN REPORT")).toBeInTheDocument();
   expect(screen.getByText("System assessment")).toBeInTheDocument();
 });
 
