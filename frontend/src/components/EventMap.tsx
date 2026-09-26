@@ -155,7 +155,7 @@ export function EventMap({ events, geojson, clusters = EMPTY_CLUSTERS, hotspots 
       try {
       map = new maplibregl.Map({
         container: target,
-        style: "https://demotiles.maplibre.org/style.json",
+        style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
         center: [78.9629, 22.5937],
         zoom: compact ? 3.2 : 3.8,
       });
