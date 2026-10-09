@@ -1,6 +1,6 @@
 # Integration Contracts
 
-These contracts are the Phase 1 boundary for teammate-owned modules. Provider DTOs are Python domain dataclasses and must not depend on FastAPI, SQLAlchemy, database models, or frontend types.
+These contracts define the boundary between provider modules and the application. Provider DTOs are Python domain dataclasses and must not depend on FastAPI, SQLAlchemy, database models, or frontend types.
 
 ## Verification provider
 
@@ -19,7 +19,7 @@ class VerificationProvider(Protocol):
 
 Providers must be asynchronous, deterministic for test fixtures where practical, and versioned through `ProviderMetadata`. They must raise a clear integration exception for unrecoverable failures; later orchestration will persist the event and translate the failure into a pending or unavailable assessment. A provider must never set `AdminStatus.VERIFIED`.
 
-The current `MockVerificationProvider` returns `UNKNOWN`, `UNAVAILABLE`, no score, and no duplicate candidates. It is a wiring placeholder, not a classifier or scoring implementation. Phase 2 safely calls `evaluate` only after canonical event persistence; an unavailable result or exception does not roll back ingestion.
+The current `MockVerificationProvider` returns `UNKNOWN`, `UNAVAILABLE`, no score, and no duplicate candidates. It is a wiring placeholder, not a classifier or scoring implementation. The ingestion pipeline calls `evaluate` only after canonical event persistence; an unavailable result or exception does not roll back ingestion.
 
 ## Geospatial provider
 
@@ -42,14 +42,14 @@ uses the request or ingestion session after its event flush, never commits, roll
 closes that session. It uses `ST_DWithin` and `ST_Distance` against generated geography
 points, and returns deterministic distance/ID ordering. A frontend consumes the backend
 GeoJSON rather than calculating geographic distances itself. The mock provider remains an
-empty, isolated-test implementation. Phase 2 calls enrichment only when coordinates are
+empty, isolated-test implementation. Ingestion calls enrichment only when coordinates are
 present; a provider failure leaves the event persisted and marked partial.
 
 ## Integration expectations
 
-Future implementations are selected through `VERIFICATION_PROVIDER` and `GEOSPATIAL_PROVIDER`. The factory functions in `app.api.dependencies` are the only composition point. Teammates should add a provider implementation, register its configuration name, and satisfy contract tests for type shape, score bounds, metadata, empty results, and failure behavior.
+Future implementations are selected through `VERIFICATION_PROVIDER` and `GEOSPATIAL_PROVIDER`. The factory functions in `app.api.dependencies` are the only composition point. Contributors add a provider implementation, register its configuration name, and satisfy contract tests for type shape, score bounds, metadata, empty results, and failure behavior.
 
-## G3 geographic aggregation
+## Geographic aggregation
 
 The PostGIS provider also supports typed cluster, hotspot, and regional-summary query DTOs.
 Cluster IDs are scoped to a single query and are not persistent identities. A hotspot is a count
@@ -57,12 +57,5 @@ of submitted reports in a fixed spatial cell, not a forecast, severity score, or
 result. Regional summaries can use source-provided attributes or the imported approved-boundary
 dataset; the response identifies the grouping method, dataset, and vintage. `GET /api/v1/geo/boundaries`
 returns the available boundary metadata and geometry for the selected level.
-# Phase 6 teammate handoff
 
-## AI/ML teammate
-
-Implement a provider in `backend/app/integrations/verification/` matching `VerificationProvider` in `app.domain.providers`: `classify(VerificationEventInput)`, `evaluate(VerificationEventInput, VerificationContext)`, and `find_duplicates(VerificationEventInput, Sequence[CandidateEvent])`. Return the domain DTOs and shared enums only; do not mutate database, review state, or HTTP objects. Scores/confidence must be 0–1. Raise clear exceptions for timeouts/unavailability. Expose `ProviderMetadata` with name/version. Add factory support only when the module exists; `VERIFICATION_PROVIDER=teammate` must fail clearly until then. Run `pytest tests/test_provider_contracts.py`.
-
-## Geospatial teammate
-
-Implement a provider in `backend/app/integrations/geospatial/` matching `GeospatialProvider`: `enrich_location(GeospatialEventInput)`, `find_nearby(GeospatialEventInput, NearbyQuery)`, and `region_summary(RegionSummaryFilters)`. Inputs/outputs are domain DTOs; preserve valid coordinates, stable IDs, metadata, and explicit failure behavior. Do not mutate human-review state. Add factory support only when available; `GEOSPATIAL_PROVIDER=teammate` must fail clearly until then. Run `pytest tests/test_provider_contracts.py`.
+See [contribution guidance](../CONTRIBUTING.md) for adding a provider.

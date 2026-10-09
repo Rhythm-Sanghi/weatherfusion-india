@@ -1,6 +1,10 @@
-# NOAA Storm Events dataset assessment
+# NOAA Storm Events experiments
 
-## Source and scope
+Two different inputs are described below. The 1950–1959 assessment did not
+support narrative classification; the separate 2025 experiment does. Neither
+evaluates citizen-report truthfulness or duplicate reports.
+
+## Historical 1950–1959 input assessment
 
 This project received ten NOAA Storm Events detail CSV files for 1950–1959. The preprocessing command records each original filename, SHA-256 digest, byte count, modified time, schema, and record count in `ml/data/noaa_storm_events_1950_1959/source_manifest.json`.
 
@@ -29,7 +33,7 @@ If the verified download date is unavailable, omit `--download-date`. The manife
 - `record_audit.csv`: one audit row per original source record, referenced by source file and source line.
 - `structured_event_type_candidates_not_for_text_ml.csv`: source-preserving rows with valid start time/coordinates and a NOAA event-type label. It is a registry for assessment, not a training dataset for the WeatherFusion report-text classifier.
 
-No `train.csv`, `validation.csv`, `test.csv`, model artifact, or precision/recall/F1 report is written unless a future source has both legitimate input text and an incident-aware/episode-aware grouping key.
+For this 1950–1959 input, preprocessing does not write training partitions, a model artifact or classification metrics: its narratives and episode grouping fields are missing. The separate suitable 2025 input is described below.
 
 ## What this collection can and cannot support
 
@@ -39,7 +43,7 @@ It cannot support the WeatherFusion report-text event-type classifier when all s
 
 NOAA `EVENT_TYPE` is a legitimate source label for its own historical event record. It is not a false-report label, a truthfulness label, or a verified duplicate-report label. An NOAA episode identifier must never be described as a duplicate-report label.
 
-## Future data requirements
+## Requirements for report-text training
 
 To train and evaluate the intended report-text model, add an authorised dataset that supplies:
 
@@ -51,7 +55,7 @@ To train and evaluate the intended report-text model, add an authorised dataset 
 
 To train duplicate detection, add independently reviewed duplicate/non-duplicate pair labels. Do not derive them from NOAA episode identifiers.
 
-## Approved 2025 historical event-type experiment
+## Separate 2025 historical event-type experiment
 
 An additional official NOAA detail download is preserved unchanged at
 `datasets/NOAA_Storm_Events_2025/StormEvents_details-ftp_v1.0_d2025_c20260819.csv.gz`.
