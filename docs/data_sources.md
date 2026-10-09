@@ -2,15 +2,21 @@
 
 ## Approved sources
 
-WeatherFusion India uses only the sources below unless the project owner adds a new source to this document after verifying its permissions and terms.
+The prototype uses Open-Meteo for live forecast context, controlled records for
+demonstrations, and separately scoped NOAA historical experiments. New sources
+require documented permissions, terms and provenance before inclusion.
 
-### Approved final prototype scope
+### Runtime source policy
 
-The approved prototype configuration is **Open-Meteo plus controlled demonstration data**. Open-Meteo is the only external live weather-data provider. No additional live source, credential, platform integration, or API key may be introduced without separate project-owner approval.
+The configured Open-Meteo endpoint is `https://api.open-meteo.com/v1/forecast`.
+This prototype is configured for non-commercial use without an API key or paid
+fallback. New credential-backed integrations and cost changes need maintainer
+review; they are not part of the current runtime configuration.
 
-Use the existing `https://api.open-meteo.com/v1/forecast` configuration and the free non-commercial tier only. Do not add an API key, paid subscription configuration, or any credential-backed fallback. If Open-Meteo is unavailable, return an explicit unavailable result or a clearly labelled cached response; never substitute controlled data and label it as live.
-
-The demonstration must remain usable without external connectivity. It uses previously prepared local controlled reports and/or clearly labelled cached Open-Meteo observations. A network outage must never prevent the incident-management walkthrough from completing.
+When the provider is unavailable, the application reports unavailability or
+serves labelled cached context. Controlled data is never labelled as live.
+Offline demonstrations use prepared controlled records and any available cached
+forecast; an unavailable forecast does not block the incident-review workflow.
 
 | Source | Approved use | Provenance required | Restrictions |
 | --- | --- | --- | --- |
